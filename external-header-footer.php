@@ -1,11 +1,11 @@
 <?php
 /*
  Plugin Name: External Header Footer
- Plugin URI: https://github.com/yllus/external-header-footer
+ Plugin URI: https://github.com/kurznet/external-header-footer
  Description: Exposes the header and footer of the website as individual files, allowing for external consumption (for third parties sites that want a similar design style).
- Author: Sully Syed
- Version: 1.0.1
- Author URI: http://yllus.com/
+ Author: Kurznet
+ Version: 1.0.3
+ Author URI: https://kurznet.com/
 */
 
 // Add a new rewrite rule that points to our exposed header and footer.
@@ -36,6 +36,14 @@ function ehf_parse_request( &$wp ) {
 			    get_header();
 			    $str_output = ob_get_contents();
 			    ob_end_clean();
+
+			    // set current page item
+		        if ( ( (int) get_option('ehf_external_current_page', 0) ) != 0 ) {
+			        $current_item = get_option('ehf_external_current_page');
+			        $re = '/class="(.*?)menu-item-'.$current_item.'(.*?)"/m';
+			        $subst = 'class="$1menu-item-'.$current_item.' current_page_item"';
+			        $str_output = preg_replace($re, $subst, $str_output);
+		        }
 
 			    // If we're forcing use of absolute URLs, filter the output of the header through a function.
 				if ( ( (int) get_option('ehf_force_use_of_absolute', 0) ) == 1 ) {
@@ -238,6 +246,10 @@ function external_header_footer_init() {
     // output in the function ehf_expose_force_use_of_https_checkbox().
     add_settings_field('ehf_force_use_of_https', '', 'ehf_expose_force_use_of_https_checkbox', 'external_header_footer_settings_page', 'external_header_footer_settings_section');
     register_setting('external_header_footer_settings_group', 'ehf_force_use_of_https');
+
+	// Add Current Page Item
+	add_settings_field('ehf_external_current_page', '', 'ehf_external_current_page_item', 'external_header_footer_settings_page', 'external_header_footer_settings_section');
+	register_setting('external_header_footer_settings_group', 'ehf_external_current_page');
 
     // Add the "External Header URL" field (blank title here, output in its function), registered to the group "external_header_footer_settings_group", output in 
     // the function ext_external_header_url_text() and using the sanitizing function of ehf_external_clear_cache().
@@ -462,6 +474,39 @@ function ehf_external_cache_expiry_text() {
 	</tr>	
 	<?php	
 }
+
+function ehf_external_current_page_item() {
+	// Retrieve current page item
+	$ehf_external_current_page = get_option('ehf_external_current_page');
+	$menuLocations = get_nav_menu_locations(); // Get our nav locations (set in our theme, usually functions.php)
+	// This returns an array of menu locations ([LOCATION_NAME] = MENU_ID);
+
+	$menuID = $menuLocations['primary'];
+	$primaryNav =  wp_get_nav_menu_items($menuID);
+
+	?>
+    <tr valign="top">
+        <th scope="row"><label for="ehf_current_page">Current Page Item</label></th>
+        <td>
+            <select name="ehf_external_current_page" id="ehf_external_current_page">
+                <option value="">choose Menu</option>
+				<?php echo '1111';
+				foreach ($primaryNav AS $item){
+					if($item->menu_item_parent == 0) {
+						echo '<option value="' . $item->ID . '" ' . ($item->ID == $ehf_external_current_page ? 'selected' : '') . '>' . $item->title . '</option>';
+					}
+				}
+				?>
+            </select>
+
+
+            <p class="description">The Menu that should be highlighted as "active".</p>
+        </td>
+    </tr>
+	<?php
+}
+
+
 
 /**
  * Called when a new value is sent to the "Expose Header and Footer" field; flushes the internal cache of WordPress rewrite rules / permalinks 

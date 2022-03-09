@@ -106,6 +106,9 @@ Use the **external_header_footer_pre_footer** and the same technique - use of re
 
 == Changelog ==
 
+= 1.0.3 =
+* add current page item
+
 = 1.0.2 =
 * Verified compatibility with WordPress v5.0.0. Cleaned up readme.txt line breaks.
 
@@ -117,6 +120,9 @@ Use the **external_header_footer_pre_footer** and the same technique - use of re
 * Initial release; tested compatibility with WordPress v3.9.2.
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+* add current page item
 
 = 1.0.2 =
 * Bump plug-in compatibility to WordPress v5.0.0.
